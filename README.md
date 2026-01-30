@@ -4,5 +4,5 @@ This is the codebase for [Diffusion Models Beat GANS on Image Synthesis](http://
 
 This repository is based on [openai/improved-diffusion](https://github.com/openai/improved-diffusion), with modifications for classifier conditioning and architecture improvements.
 
-# Google Colab Notebook
-This repository provides a ready-to-run Google Colab notebook for sampling.
+# Sampling from pre-trained diffusion model
+This repository provides a ready-to-run Google Colab notebook for sampling from guided-diffusion pre-trained diffusion model.
