@@ -8,4 +8,4 @@ This repository is based on [openai/improved-diffusion](https://github.com/opena
 This repository provides a ready-to-run Google Colab notebook for sampling from the guided-diffusion pre-trained diffusion model. You can sample from diffusion models trained on datasets such as FFHQ, CelebA-HQ, AFHQ, and CUB, without manually downloading the checkpoints.
 
 # Image Restoration with pre-trained diffusion model
-In recent years, numerous methods have been introduced for unsupervised image restoration using diffusion models. In this work, I aim to implement these methods based on the descriptions provided in the original papers, rather than relying on their official GitHub implementations.
+In recent years, numerous methods have been introduced for unsupervised image restoration using diffusion models. In this part, I aim to implement these methods based on the descriptions provided in the original papers, rather than relying on their official GitHub implementations.
