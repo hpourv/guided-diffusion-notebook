@@ -1,6 +1,5 @@
 """
-Generate a large batch of image samples from a model and save them as a large
-numpy array. This can be used to produce samples for FID evaluation.
+Generate a batch of image samples from a model and save them.
 """
 
 import argparse
@@ -18,13 +17,14 @@ from guided_diffusion.script_util import (
     add_dict_to_argparser,
     args_to_dict,
 )
+from torchvision import utils
 
 
 def main():
     args = create_argparser().parse_args()
 
     dist_util.setup_dist()
-    logger.configure()
+    logger.configure(dir=args.sample_dir)
 
     logger.log("creating model and diffusion...")
     model, diffusion = create_model_and_diffusion(
@@ -41,22 +41,40 @@ def main():
     logger.log("sampling...")
     all_images = []
     all_labels = []
-    while len(all_images) * args.batch_size < args.num_samples:
+    total_generated = 0
+
+    while total_generated < args.num_samples:
+        current_batch_size = min(args.batch_size, args.num_samples - total_generated)
+
         model_kwargs = {}
         if args.class_cond:
             classes = th.randint(
-                low=0, high=NUM_CLASSES, size=(args.batch_size,), device=dist_util.dev()
+                low=0, high=NUM_CLASSES, size=(current_batch_size,), device=dist_util.dev()
             )
             model_kwargs["y"] = classes
+
         sample_fn = (
             diffusion.p_sample_loop if not args.use_ddim else diffusion.ddim_sample_loop
         )
         sample = sample_fn(
             model,
-            (args.batch_size, 3, args.image_size, args.image_size),
+            (current_batch_size, 3, args.image_size, args.image_size),
             clip_denoised=args.clip_denoised,
             model_kwargs=model_kwargs,
         )
+
+        # saving png
+        for i in range(current_batch_size):
+            out_path = os.path.join(logger.get_dir(),
+                                    f"{str(total_generated + i).zfill(5)}.png")
+            utils.save_image(
+                sample[i].unsqueeze(0),
+                out_path,
+                nrow=1,
+                normalize=True,
+            )
+
+        # saving npz
         sample = ((sample + 1) * 127.5).clamp(0, 255).to(th.uint8)
         sample = sample.permute(0, 2, 3, 1)
         sample = sample.contiguous()
@@ -64,13 +82,16 @@ def main():
         gathered_samples = [th.zeros_like(sample) for _ in range(dist.get_world_size())]
         dist.all_gather(gathered_samples, sample)  # gather not supported with NCCL
         all_images.extend([sample.cpu().numpy() for sample in gathered_samples])
+
         if args.class_cond:
             gathered_labels = [
                 th.zeros_like(classes) for _ in range(dist.get_world_size())
             ]
             dist.all_gather(gathered_labels, classes)
             all_labels.extend([labels.cpu().numpy() for labels in gathered_labels])
-        logger.log(f"created {len(all_images) * args.batch_size} samples")
+
+        total_generated += current_batch_size
+        logger.log(f"created {total_generated} / {args.num_samples} samples")
 
     arr = np.concatenate(all_images, axis=0)
     arr = arr[: args.num_samples]
@@ -93,10 +114,11 @@ def main():
 def create_argparser():
     defaults = dict(
         clip_denoised=True,
-        num_samples=10000,
-        batch_size=16,
+        num_samples=10,
+        batch_size=1,
         use_ddim=False,
         model_path="",
+        sample_dir="",
     )
     defaults.update(model_and_diffusion_defaults())
     parser = argparse.ArgumentParser()
@@ -106,3 +128,4 @@ def create_argparser():
 
 if __name__ == "__main__":
     main()
+
