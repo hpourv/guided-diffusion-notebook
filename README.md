@@ -6,3 +6,6 @@ This repository is based on [openai/improved-diffusion](https://github.com/opena
 
 # Sampling from pre-trained diffusion model
 This repository provides a ready-to-run Google Colab notebook for sampling from guided-diffusion pre-trained diffusion model.
+
+# Image Restoration with pre-trained diffusion model
+
