@@ -7,7 +7,7 @@ This repository is based on [openai/improved-diffusion](https://github.com/opena
 # Sampling from pre-trained diffusion model
 This section provides a ready-to-run Google Colab notebook for sampling from pre-trained guided-diffusion models. It enables easy sampling from models trained on datasets such as FFHQ, CelebA-HQ, AFHQ, and CUB, without the need to manually download the checkpoints.
 
-[Link Text](relative/path/to/file.ext)
+[guided diffusion notebook](guided_diffusion.ipynb)
 
 
 
