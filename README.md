@@ -1,6 +1,6 @@
 # guided-diffusion
 
-This repository is based on [openao/guided-diffusion](https://github.com/openai/guided-diffusion)
+This repository is based on [openao/guided-diffusion](https://github.com/openai/guided-diffusion).
 
 
 # Sampling from pre-trained diffusion model
